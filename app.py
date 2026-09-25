@@ -236,60 +236,63 @@ def reiniciar():
 # UI DA APLICAÇÃO
 # ==========================================
 st.title("🌲 Floresta do Menir")
-st.markdown("*Gerador OSR de Personagens - Rápido, Elegante e Pronto para a Aventura*")
+st.markdown("*Gerador de personagens para a mesa aberta de RPG*")
 st.divider()
 
 if st.session_state.step == 1:
-    st.subheader("Etapa 1: Assentamento Inicial")
-    assentamento_escolhido = st.selectbox("Onde sua jornada começa?", list(ASSENTAMENTOS.keys()))
-    
-    if st.button("Rolar Demografia e Atributos", type="primary"):
-        st.session_state.assentamento = assentamento_escolhido
-        st.session_state.rolagem_demo = rolar(1, 20)
-        st.session_state.attrs = gerar_atributos()
-        proximo_passo()
-        st.rerun()
+    with st.container(border=True):
+        st.subheader("Etapa 1: Assentamento Inicial")
+        assentamento_escolhido = st.selectbox("Onde sua jornada começa?", list(ASSENTAMENTOS.keys()))
+        
+        if st.button("Rolar Demografia e Atributos", type="primary", use_container_width=True):
+            st.session_state.assentamento = assentamento_escolhido
+            st.session_state.rolagem_demo = rolar(1, 20)
+            st.session_state.attrs = gerar_atributos()
+            proximo_passo()
+            st.rerun()
 
 elif st.session_state.step == 2:
-    st.subheader("Etapa 2: Parentesco e Classe")
-    
-    # Processa parentescos permitidos
-    opcoes_parentesco = []
-    for limite, kin in ASSENTAMENTOS[st.session_state.assentamento]:
-        opcoes_parentesco.append(kin)
-        if st.session_state.rolagem_demo <= limite: break
-            
-    st.info(f"O dado demográfico de **{st.session_state.assentamento}** rolou **{st.session_state.rolagem_demo}**. Você pode escolher um dos parentescos abaixo:")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        parentesco = st.radio("Escolha seu Parentesco:", opcoes_parentesco)
-    
-    with col2:
-        st.markdown("**Seus Atributos (Rolados):**")
-        c1, c2, c3 = st.columns(3)
-        attrs = st.session_state.attrs
-        c1.metric("FOR", attrs["FOR"], format_mod(calc_mod(attrs["FOR"])))
-        c2.metric("INT", attrs["INT"], format_mod(calc_mod(attrs["INT"])))
-        c3.metric("SAB", attrs["SAB"], format_mod(calc_mod(attrs["SAB"])))
-        c1.metric("DES", attrs["DES"], format_mod(calc_mod(attrs["DES"])))
-        c2.metric("CON", attrs["CON"], format_mod(calc_mod(attrs["CON"])))
-        c3.metric("CAR", attrs["CAR"], format_mod(calc_mod(attrs["CAR"])))
+    with st.container(border=True):
+        st.subheader("Etapa 2: Parentesco e Classe")
+        
+        # Processa parentescos permitidos
+        opcoes_parentesco = []
+        for limite, kin in ASSENTAMENTOS[st.session_state.assentamento]:
+            opcoes_parentesco.append(kin)
+            if st.session_state.rolagem_demo <= limite: break
+                
+        st.info(f"O dado demográfico de **{st.session_state.assentamento}** rolou **{st.session_state.rolagem_demo}**. Você pode escolher um dos parentescos abaixo:")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            parentesco = st.radio("Escolha seu Parentesco:", opcoes_parentesco)
+        
+        with col2:
+            st.markdown("**Seus Atributos (Rolados):**")
+            c1, c2, c3 = st.columns(3)
+            attrs = st.session_state.attrs
+            c1.metric("FOR", attrs["FOR"], format_mod(calc_mod(attrs["FOR"])))
+            c2.metric("INT", attrs["INT"], format_mod(calc_mod(attrs["INT"])))
+            c3.metric("SAB", attrs["SAB"], format_mod(calc_mod(attrs["SAB"])))
+            c1.metric("DES", attrs["DES"], format_mod(calc_mod(attrs["DES"])))
+            c2.metric("CON", attrs["CON"], format_mod(calc_mod(attrs["CON"])))
+            c3.metric("CAR", attrs["CAR"], format_mod(calc_mod(attrs["CAR"])))
 
-    # Processa Classes
-    classes_disp = CLASSES_FADAS if parentesco in {"Elfo", "Cattus", "Mûr"} else CLASSES_MORTAIS
-    classes_rec = recomendar_classes(attrs, classes_disp)
-    
-    def formatar_classe(c):
-        return f"{c} (★ Recomendada)" if c in classes_rec else c
+        st.divider()
+        # Processa Classes
+        classes_disp = CLASSES_FADAS if parentesco in {"Elfo", "Cattus", "Mûr"} else CLASSES_MORTAIS
+        classes_rec = recomendar_classes(attrs, classes_disp)
+        
+        def formatar_classe(c):
+            return f"{c} (★ Recomendada)" if c in classes_rec else c
 
-    classe = st.selectbox("Escolha sua Classe:", classes_disp, format_func=formatar_classe)
-    
-    if st.button("Finalizar Ficha", type="primary"):
-        st.session_state.parentesco = parentesco
-        st.session_state.classe = classe
-        proximo_passo()
-        st.rerun()
+        classe = st.selectbox("Escolha sua Classe:", classes_disp, format_func=formatar_classe)
+        
+        if st.button("Finalizar Ficha", type="primary", use_container_width=True):
+            st.session_state.parentesco = parentesco
+            st.session_state.classe = classe
+            proximo_passo()
+            st.rerun()
 
 elif st.session_state.step == 3:
     # --- ROLAGENS FINAIS ---
@@ -301,7 +304,8 @@ elif st.session_state.step == 3:
         st.session_state.alinhamento = random.choice(["Ordeiro", "Neutro"]) if c in {"Clérigo", "Frade"} else random.choice(["Ordeiro", "Neutro", "Caótico"])
         
         lim, signo_nome, signo_efeito = next(item for item in SIGNOS_LUNARES if rolar(1, 100) <= item[0])
-        st.session_state.signo = f"{signo_nome} — {signo_efeito}"
+        st.session_state.signo = f"{signo_nome}"
+        st.session_state.signo_efeito = signo_efeito
         
         dv = CLASSES_INFO[c]["dv"]
         mod_con = calc_mod(a["CON"])
@@ -317,7 +321,7 @@ elif st.session_state.step == 3:
         
         ouro = rolar(3, 6)
         itens_av = random.sample(ITENS_AVENTURA, 4)
-        pacote_base = ["mochila (peso 80)", "6 rações perecíveis", "2 cantis", "6 tochas", "pederneira", "saco de dormir"]
+        pacote_base = ["mochila", "6 rações", "2 cantis", "6 tochas", "pederneira", "saco de dormir"]
         todos_equipamentos = pacote_base + [i.lower() for i in itens_av]
         str_equipamentos = ", ".join(todos_equipamentos[:-1]) + " e " + todos_equipamentos[-1] + "."
         
@@ -337,78 +341,90 @@ elif st.session_state.step == 3:
         
         st.session_state.ficha_pronta = True
 
-    # --- UI DA FICHA ---
+    # --- UI DA FICHA (SIMULANDO A FICHA FÍSICA) ---
     st.success("Personagem gerado com sucesso!")
     
     with st.expander("📝 Opções de Nomes Gerados", expanded=True):
         st.markdown(gerar_nomes_formatados(st.session_state.parentesco))
 
-    st.markdown("### Perfil do Personagem")
-    col1, col2 = st.columns(2)
-    col1.markdown(f"**Parentesco:** {st.session_state.parentesco}")
-    col1.markdown(f"**Classe:** {st.session_state.classe}")
-    col1.markdown(f"**Alinhamento:** {st.session_state.alinhamento}")
-    col2.markdown(f"**Assentamento:** {st.session_state.assentamento}")
-    col2.markdown(f"**Idiomas Extra:** {max(0, st.session_state.mod_int)}")
-    col2.markdown(f"**Línguas Faladas:** {', '.join(st.session_state.linguas)}")
-    st.markdown(f"**Signo da Lua:** {st.session_state.signo}")
-    
-    st.markdown("---")
-    
-    st.markdown("### Atributos e Combate")
-    c1, c2, c3, c4, c5, c6 = st.columns(6)
-    a = st.session_state.attrs
-    c1.metric("FOR", a["FOR"], format_mod(calc_mod(a["FOR"])))
-    c2.metric("INT", a["INT"], format_mod(calc_mod(a["INT"])))
-    c3.metric("SAB", a["SAB"], format_mod(calc_mod(a["SAB"])))
-    c4.metric("DES", a["DES"], format_mod(calc_mod(a["DES"])))
-    c5.metric("CON", a["CON"], format_mod(calc_mod(a["CON"])))
-    c6.metric("CAR", a["CAR"], format_mod(calc_mod(a["CAR"])))
-    
-    col_cb1, col_cb2, col_cb3 = st.columns(3)
-    col_cb1.metric("PV Máximo", st.session_state.pv, st.session_state.dv_str, delta_color="off")
-    col_cb2.metric("Classe de Armadura", st.session_state.ca_total, delta_color="off")
-    col_cb3.metric("Ataque Base", CLASSES_INFO[st.session_state.classe]["ataque"], delta_color="off")
-    
-    res_mag = "+2" if st.session_state.parentesco in {"Elfo", "Cattus", "Mûr"} else "Nenhuma"
-    st.caption(f"**Resistência à Magia:** {res_mag}")
-
-    sv = SALVAGUARDAS[st.session_state.classe]
-    st.markdown("##### Salvaguardas")
-    sv1, sv2, sv3, sv4, sv5 = st.columns(5)
-    sv1.markdown(f"**Morte:**\n## {sv[0]}")
-    sv2.markdown(f"**Raio:**\n## {sv[1]}")
-    sv3.markdown(f"**Paralisia:**\n## {sv[2]}")
-    sv4.markdown(f"**Explosão:**\n## {sv[3]}")
-    sv5.markdown(f"**Feitiço:**\n## {sv[4]}")
-    
-    st.markdown("---")
-    
-    st.markdown("### Inventário e Carga")
-    eq = st.session_state.eq
-    arm_nome = eq["armadura_nome"]
-    arm_p = ARMADURAS[arm_nome]["peso"]
-    arm_ca = ARMADURAS[arm_nome]["ca"]
-    
-    str_armadura = f"**{arm_nome}** (CA {arm_ca}, Peso {arm_p})"
-    if eq["tem_escudo"]: str_armadura += " + **Escudo** (CA +1, Peso 100)"
-    
-    st.markdown(f"- **Armadura:** {str_armadura}")
-    
-    str_armas = []
-    for arma in eq["armas"]:
-        str_armas.append(f"**{arma}** (Dano {ARMAS[arma]['dano']}, Peso {ARMAS[arma]['peso']})")
-    for n_mun, p_mun in eq["municao"]:
-        str_armas.append(f"{n_mun} (Peso {p_mun})")
+    # BLOCO 1: PERFIL
+    with st.container(border=True):
+        st.markdown("### 📜 Perfil do Personagem")
+        col1, col2 = st.columns(2)
+        col1.markdown(f"**Parentesco:** {st.session_state.parentesco}")
+        col1.markdown(f"**Classe:** {st.session_state.classe}")
+        col1.markdown(f"**Alinhamento:** {st.session_state.alinhamento}")
+        col2.markdown(f"**Assentamento:** {st.session_state.assentamento}")
+        col2.markdown(f"**Línguas Extras:** {max(0, st.session_state.mod_int)}")
+        col2.markdown(f"**Línguas Faladas:** {', '.join(st.session_state.linguas)}")
         
-    st.markdown(f"- **Armas:** {', '.join(str_armas)}")
-    st.markdown(f"- **Ouro Inicial:** {st.session_state.ouro} moedas (Peso {st.session_state.ouro})")
+        st.markdown(f"**Signo da Lua:** {st.session_state.signo}")
+        st.caption(f"*{st.session_state.signo_efeito}*")
     
-    # Parágrafo contínuo elegante e com quebra de linha nativa
-    st.markdown(f"- **Equipamento:** {st.session_state.str_equip}")
-    st.markdown(f"**📦 PESO TOTAL CARREGADO:** {st.session_state.peso_total}")
+    # BLOCO 2: ATRIBUTOS
+    with st.container(border=True):
+        st.markdown("### 🎲 Atributos")
+        c1, c2, c3, c4, c5, c6 = st.columns(6)
+        a = st.session_state.attrs
+        c1.metric("FOR", a["FOR"], format_mod(calc_mod(a["FOR"])))
+        c2.metric("INT", a["INT"], format_mod(calc_mod(a["INT"])))
+        c3.metric("SAB", a["SAB"], format_mod(calc_mod(a["SAB"])))
+        c4.metric("DES", a["DES"], format_mod(calc_mod(a["DES"])))
+        c5.metric("CON", a["CON"], format_mod(calc_mod(a["CON"])))
+        c6.metric("CAR", a["CAR"], format_mod(calc_mod(a["CAR"])))
+
+    # BLOCO 3: COMBATE E SALVAGUARDAS (Lado a Lado)
+    col_combat, col_saves = st.columns(2)
     
-    st.divider()
-    if st.button("🎲 Gerar Novo Personagem", type="secondary", use_container_width=True):
+    with col_combat:
+        with st.container(border=True):
+            st.markdown("### ⚔️ Combate")
+            col_cb1, col_cb2, col_cb3 = st.columns(3)
+            col_cb1.metric("PV Máximo", st.session_state.pv, st.session_state.dv_str, delta_color="off")
+            col_cb2.metric("Armadura (CA)", st.session_state.ca_total, delta_color="off")
+            col_cb3.metric("Ataque", CLASSES_INFO[st.session_state.classe]["ataque"], delta_color="off")
+            
+            res_mag = "+2" if st.session_state.parentesco in {"Elfo", "Cattus", "Mûr"} else "Nenhuma"
+            st.markdown(f"**Resistência à Magia:** {res_mag}")
+
+    with col_saves:
+        with st.container(border=True):
+            st.markdown("### 🛡️ Salvaguardas")
+            sv = SALVAGUARDAS[st.session_state.classe]
+            sv1, sv2, sv3, sv4, sv5 = st.columns(5)
+            sv1.metric("Morte", sv[0])
+            sv2.metric("Raio", sv[1])
+            sv3.metric("Paralisia", sv[2])
+            sv4.metric("Explosão", sv[3])
+            sv5.metric("Feitiço", sv[4])
+    
+    # BLOCO 4: INVENTÁRIO
+    with st.container(border=True):
+        st.markdown("### 🎒 Inventário e Carga")
+        eq = st.session_state.eq
+        arm_nome = eq["armadura_nome"]
+        arm_p = ARMADURAS[arm_nome]["peso"]
+        arm_ca = ARMADURAS[arm_nome]["ca"]
+        
+        str_armadura = f"**{arm_nome}** (CA {arm_ca}, Peso {arm_p})"
+        if eq["tem_escudo"]: str_armadura += " + **Escudo** (CA +1, Peso 100)"
+        
+        st.markdown(f"- **Armadura:** {str_armadura}")
+        
+        str_armas = []
+        for arma in eq["armas"]:
+            str_armas.append(f"**{arma}** (Dano {ARMAS[arma]['dano']}, Peso {ARMAS[arma]['peso']})")
+        for n_mun, p_mun in eq["municao"]:
+            str_armas.append(f"{n_mun} (Peso {p_mun})")
+            
+        st.markdown(f"- **Armas:** {', '.join(str_armas)}")
+        st.markdown(f"- **Ouro Inicial:** {st.session_state.ouro} moedas")
+        st.markdown(f"- **Acessórios Base & Aventura:** {st.session_state.str_equip}")
+        
+        st.divider()
+        st.markdown(f"**📦 PESO TOTAL CARREGADO:** {st.session_state.peso_total} moedas")
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("🎲 Gerar Novo Personagem", type="primary", use_container_width=True):
         reiniciar()
         st.rerun()
